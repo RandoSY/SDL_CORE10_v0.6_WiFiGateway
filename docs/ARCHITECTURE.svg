@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="920" viewBox="0 0 1600 920">
+<defs><linearGradient id="bg" x2="0" y2="1"><stop stop-color="#f5f9ff"/><stop offset="1" stop-color="#e5eef9"/></linearGradient><linearGradient id="head" x2="1" y2="1"><stop stop-color="#081f3e"/><stop offset="1" stop-color="#164d80"/></linearGradient><filter id="shadow"><feDropShadow dx="0" dy="5" stdDeviation="9" flood-color="#0a3054" flood-opacity=".12"/></filter></defs>
+<style>text{font-family:Arial,Helvetica,sans-serif;fill:#173757}.kicker{font-size:18px;letter-spacing:3px;font-weight:700;fill:#acd8ff}.title{font-size:42px;font-weight:800;fill:white}.subtitle{font-size:21px;fill:#d3eaff}.ht{font-size:25px;font-weight:800}.body{font-size:19px}.mini{font-size:17px;fill:#55738e}.tiny{font-size:15px;fill:#55738e}.mono{font-family:Consolas,monospace;font-size:18px}.badge{font-size:17px;font-weight:800}.arrow{stroke:#267cbe;stroke-width:5;fill:none;stroke-linecap:round}.stroke{stroke:#c9dcec;stroke-width:2}</style>
+<rect width="1600" height="920" fill="url(#bg)"/>
+<rect width="1600" height="140" rx="0" fill="url(#head)"/>
+<text x="55" y="44" class="kicker">SDL / SOFTWARE-DEFINED LABORATORY</text>
+<text x="55" y="98" class="title">CORE 10 v0.6 - How the Python Wi-Fi Gateway Works</text>
+<text x="55" y="125" class="subtitle">The instrument measures. Python supervises. The browser explains.</text>
+<!-- three boxes -->
+<rect x="50" y="198" width="427" height="332" rx="23" fill="#fff" stroke="#bfd6ec" stroke-width="2" filter="url(#shadow)"/>
+<rect x="72" y="220" width="130" height="35" rx="17" fill="#e2f4ff"/><text x="91" y="244" class="badge" fill="#176497">01  DEVICE</text>
+<text x="74" y="298" class="ht">ESP32 / ATOM / Pico W</text><text x="74" y="334" class="body">Wi-Fi Station - existing router</text>
+<text x="74" y="372" class="body">Reads sensors; timestamps samples</text><text x="74" y="404" class="body">Adds sequence number + CRC32</text><text x="74" y="436" class="body">Reports RSSI when supported</text>
+<rect x="72" y="466" width="380" height="42" rx="10" fill="#e7f5ff"/><text x="91" y="493" class="mono">TCP / 8766  (SDL-NDJSON/1)</text>
+<rect x="590" y="198" width="427" height="332" rx="23" fill="#fff" stroke="#9ec9ec" stroke-width="2.5" filter="url(#shadow)"/>
+<rect x="612" y="220" width="159" height="35" rx="17" fill="#e0f1ff"/><text x="630" y="244" class="badge">02  PYTHON CORE</text>
+<text x="613" y="298" class="ht">SDL v0.6 Gateway</text><text x="613" y="334" class="body">Validates frames and sample IDs</text><text x="613" y="368" class="body">Calculates errors and goodput</text><text x="613" y="402" class="body">Measures RTT; estimates lag</text><text x="613" y="436" class="body">Logs accepted data to JSONL</text>
+<rect x="612" y="466" width="379" height="42" rx="10" fill="#e3f4eb"/><text x="632" y="493" class="mono">HTTP + WebSocket / 8788</text>
+<rect x="1130" y="198" width="420" height="332" rx="23" fill="#fff" stroke="#bfd6ec" stroke-width="2" filter="url(#shadow)"/>
+<rect x="1152" y="220" width="170" height="35" rx="17" fill="#e2f4ff"/><text x="1167" y="244" class="badge">03  DASHBOARD</text>
+<text x="1153" y="298" class="ht">CORE 10 - Five Tabs</text><text x="1153" y="334" class="body">Live graph and acquisition</text><text x="1153" y="368" class="body">Vernier-style analysis tools</text><text x="1153" y="402" class="body">Archive and CSV / JSON</text><text x="1153" y="436" class="body">Real-time connection health</text>
+<rect x="1152" y="466" width="376" height="42" rx="10" fill="#e7f5ff"/><text x="1167" y="493" class="mono">Firefox: http://127.0.0.1:8788</text>
+<path d="M481 367 H584" class="arrow"/><path d="M569 354 L584 367 569 380" class="arrow"/>
+<path d="M1021 367 H1125" class="arrow"/><path d="M1110 354 L1125 367 1110 380" class="arrow"/>
+<text x="491" y="340" class="tiny">TCP samples</text><text x="1029" y="340" class="tiny">WebSocket</text>
+<!-- metrics strip -->
+<rect x="51" y="563" width="1498" height="121" rx="20" fill="#103653"/>
+<text x="78" y="602" style="font:bold 24px Arial;fill:#e6f3ff">What the Python core really measures</text>
+<text x="79" y="641" style="font:19px Arial;fill:white">Sequence gaps + CRC errors + duplicates   |   5-second accepted throughput   |   ping/pong RTT   |   estimated upstream lag</text>
+<text x="79" y="670" style="font:16px Arial;fill:#b9d5eb">Link-health score = application-level heuristic, NOT wireless signal strength; RSSI requires a report from the instrument.</text>
+<!-- bottom -->
+<rect x="52" y="711" width="726" height="166" rx="17" fill="#eefaf2" stroke="#b1dfc4" stroke-width="2"/>
+<text x="75" y="750" style="font:bold 23px Arial;fill:#126b4b">VERIFIED - Software communication path</text>
+<text x="75" y="790" class="body">8 automated tests pass: real localhost TCP, HTTP,</text>
+<text x="75" y="823" class="body">WebSocket, checksum and fault-injection handling.</text>
+<text x="75" y="855" class="mini">Demo readings are synthetic; loopback is not an RF test.</text>
+<rect x="803" y="711" width="746" height="166" rx="17" fill="#fff7e9" stroke="#e7ca94" stroke-width="2"/>
+<text x="828" y="750" style="font:bold 23px Arial;fill:#98611d">NEXT - Physical acceptance</text>
+<text x="828" y="790" class="body">Flash/test an ESP32 Wi-Fi STA node; compare actual</text>
+<text x="828" y="823" class="body">RSSI, reconnects, sample gaps and calibrated sensors.</text>
+<text x="828" y="855" class="mini">Historic SUPER SDL MCP gateway remains separate.</text>
+<text x="54" y="907" class="tiny">Teaching diagram  |  Version 0.6 standalone sidecar  |  No fabricated performance measurements</text>
+</svg>

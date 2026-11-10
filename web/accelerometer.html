@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+ <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+ <title>SDL · ATOM Accelerometer Monitor</title>
+ <link rel="stylesheet" href="accelerometer.css">
+</head>
+<body>
+ <main>
+  <header><div><div class="eyebrow">SDL · HARDWARE MONITOR / CHECK</div><h1>ATOM accelerometer</h1><p>Original Matrix 1.0 · MPU6886 · physical acceleration magnitude</p></div><span id="connection" class="badge">Connecting…</span></header>
+  <section class="cards" aria-label="Current readings">
+   <article><label>ACCELERATION MAGNITUDE</label><strong id="magnitude">—</strong><small>mg · 1000 mg ≈ 1 g</small></article>
+   <article><label>SAMPLE RATE</label><strong id="rate">—</strong><small>Node telemetry · target 50 Hz</small></article>
+   <article><label>APPLICATION ROUND TRIP</label><strong id="rtt">—</strong><small>Gateway ↔ ATOM · median</small></article>
+   <article><label>CAPTURED SAMPLES</label><strong id="count">0</strong><small id="capture-state">Recording · latest 4096 retained</small></article>
+  </section>
+  <section class="panel">
+   <div class="toolbar"><div><h2>Acceleration magnitude vs elapsed time</h2><p>Time in ms from the first plotted sample · reference line at 1000 mg</p></div><div class="buttons"><button id="pause">Pause capture</button><button id="clear">New run</button><button id="csv">Export CSV</button><button id="json">Export JSON</button></div></div>
+   <canvas id="plot" height="320" aria-label="Physical acceleration magnitude in mg versus elapsed milliseconds"></canvas>
+   <div class="legend"><span class="dot"></span>Measured magnitude <span class="reference">—</span> Nominal rest reference</div>
+  </section>
+  <section class="lower">
+   <article class="panel"><h2>Stationary check</h2><strong id="rest">Waiting for physical samples</strong><p>Hold the unit still for at least 5 seconds. Check: readings in the latest 5-second window within 900–1100 mg and standard deviation ≤20 mg.</p><p>Motion can move readings outside this band. This is a functional check, not calibration or a sensor fault diagnosis.</p><p>Magnitude is transmitted at a target 50 Hz. This view does not show individual axes or certify vibration measurements.</p></article>
+   <article class="panel"><h2>Connection and integrity</h2><dl><dt>Node</dt><dd id="node">—</dd><dt>Device uptime / sequence</dt><dd id="identity">—</dd><dt>CRC / parse errors</dt><dd id="errors">—</dd><dt>Missing / duplicates / reordered</dt><dd id="integrity">—</dd><dt>This browser dropped</dt><dd id="delivery">0 samples</dd><dt>Gateway log</dt><dd id="logging">—</dd><dt>RSSI / reconnects</dt><dd id="radio">—</dd></dl></article>
+  </section>
+  <p id="notice" role="status">Waiting for the gateway. Synthetic or incompatible sources will not be plotted.</p>
+  <footer>ATOM TCP 8766 → Python gateway → this browser · Pause affects this capture only. Gateway acquisition continues.</footer>
+ </main>
+ <script src="accelerometer.js"></script>
+</body>
+</html>

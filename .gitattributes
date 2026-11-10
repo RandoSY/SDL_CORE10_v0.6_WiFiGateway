@@ -1,0 +1,3 @@
+# Preserve exact source bytes: recorded SHA-256 evidence includes line endings.
+# Disabling text conversion also preserves the original release archive and PDFs.
+* -text

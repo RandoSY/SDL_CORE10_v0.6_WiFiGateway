@@ -1,0 +1,31 @@
+/* SDL numerical engine v0.4 — local, dependency free. */
+(function(){'use strict';
+function finite(n){return Number.isFinite(n)}
+function mean(v){return v.length?v.reduce((a,b)=>a+b,0)/v.length:0}
+function median(a){if(!a.length)return 0;let b=[...a].sort((x,y)=>x-y);return b.length%2?b[(b.length-1)/2]:(b[b.length/2-1]+b[b.length/2])/2}
+function solve(A,b){let n=b.length,M=A.map((r,i)=>[...r,b[i]]);for(let j=0;j<n;j++){let k=j;for(let i=j+1;i<n;i++)if(Math.abs(M[i][j])>Math.abs(M[k][j]))k=i;if(Math.abs(M[k][j])<1e-13)return null;[M[k],M[j]]=[M[j],M[k]];let v=M[j][j];for(let c=j;c<=n;c++)M[j][c]/=v;for(let i=0;i<n;i++){if(i===j)continue;let m=M[i][j];for(let c=j;c<=n;c++)M[i][c]-=m*M[j][c]}}return M.map(r=>r[n])}
+function regress(x,y,features){let dim=features(x[0]).length,A=Array.from({length:dim},()=>Array(dim).fill(0)),b=Array(dim).fill(0);for(let i=0;i<x.length;i++){let f=features(x[i]);for(let j=0;j<dim;j++){b[j]+=f[j]*y[i];for(let k=0;k<dim;k++)A[j][k]+=f[j]*f[k]}}return solve(A,b)}
+const fmt=n=>!finite(n)?'—':Math.abs(n)>=10000||Math.abs(n)<.0001&&n!==0?n.toExponential(3):n.toFixed(Math.abs(n)<10?3:2);
+function fit(ds,model,base){let a=ds.filter(p=>finite(p.x)&&finite(p.y)); if(a.length<4)return null;const x=a.map(p=>p.x),y=a.map(p=>p.y);let coef,predict,eq,k=2;
+ if(model==='constant'){coef=[mean(y)];predict=v=>coef[0];eq=`y = ${fmt(coef[0])} (mean)`;k=1}
+ if(model==='linear'){coef=regress(x,y,v=>[1,v]);if(!coef)return null;predict=v=>coef[0]+coef[1]*v;eq=`y = ${fmt(coef[0])} + (${fmt(coef[1])})·x`}
+ if(model==='quadratic'){coef=regress(x,y,v=>[1,v,v*v]);if(!coef)return null;predict=v=>coef[0]+coef[1]*v+coef[2]*v*v;eq=`y = ${fmt(coef[0])} + (${fmt(coef[1])})·x + (${fmt(coef[2])})·x²`;k=3}
+ if(model==='inverse'){let valid=a.filter(p=>Math.abs(p.x)>1e-10);if(valid.length<4)return null;coef=regress(valid.map(p=>p.x),valid.map(p=>p.y),v=>[1,1/v]);if(!coef)return null;predict=v=>Math.abs(v)>1e-10?coef[0]+coef[1]/v:NaN;eq=`y = ${fmt(coef[0])} + (${fmt(coef[1])}) / x`}
+ if(model==='cos2'){coef=regress(x,y,v=>[1,Math.pow(Math.cos(v*Math.PI/180),2)]);if(!coef)return null;predict=v=>coef[0]+coef[1]*Math.pow(Math.cos(v*Math.PI/180),2);eq=`y = ${fmt(coef[0])} + (${fmt(coef[1])}) cos²(θ)`}
+ if(model==='saturating'){const initial=Math.abs(base-a[0].y),cutoff=Math.max(.04,initial*.12);const valid=a.filter(p=>p.y<base-cutoff);if(valid.length<4)return null;coef=regress(valid.map(p=>p.x),valid.map(p=>Math.log(base-p.y)),v=>[1,v]);if(!coef)return null;const amplitude=Math.exp(coef[0]),rate=-coef[1];if(rate<=0)return null;predict=v=>base-amplitude*Math.exp(-rate*v);eq=`y = ${fmt(base)} − ${fmt(amplitude)} exp(−${fmt(rate)}·x)`}
+ if(model==='exponential'){const valid=a.filter(p=>p.y>base+1e-8);if(valid.length<4)return null;coef=regress(valid.map(p=>p.x),valid.map(p=>Math.log(p.y-base)),v=>[1,v]);if(!coef)return null;const amplitude=Math.exp(coef[0]),rate=-coef[1];if(rate<=0)return null;predict=v=>base+amplitude*Math.exp(-rate*v);eq=`y = ${fmt(base)} + ${fmt(amplitude)} exp(−${fmt(rate)}·x)`}
+ if(!predict)return null;
+ const residuals=a.map(p=>({x:p.x,y:p.y-predict(p.x)})).filter(p=>finite(p.y));if(residuals.length<4)return null;let sse=residuals.reduce((s,p)=>s+p.y*p.y,0),ym=mean(y),sst=y.reduce((s,v)=>s+(v-ym)**2,0),r2=sst>0?1-sse/sst:0,rmse=Math.sqrt(sse/residuals.length),bic=residuals.length*Math.log(sse/residuals.length+1e-15)+k*Math.log(residuals.length);
+ return {model,coef,predict,eq,residuals,r2,rmse,bic,points:a.length};}
+function fitBest(ds,type,base){if(type!=='auto')return fit(ds,type,base);let candidates=['constant','linear','quadratic','inverse','exponential','saturating','cos2'].map(t=>fit(ds,t,base)).filter(Boolean);if(!candidates.length)return null;return candidates.sort((a,b)=>a.bic-b.bic)[0]}
+function transform(ds,type,baseline){return ds.map(p=>{let x=p.x,y=p.y;if(type==='square')x=x*x;if(type==='lnx')x=Math.log(x);if(type==='reciprocal')x=1/x;if(type==='lny')y=Math.log(y);if(type==='lnshift')y=Math.log(y-baseline);return {x,y}}).filter(p=>finite(p.x)&&finite(p.y))}
+function rate(ds){let out=[];for(let i=1;i<ds.length;i++){let d=ds[i].x-ds[i-1].x;if(d>0&&finite(d))out.push({x:(ds[i-1].x+ds[i].x)/2,y:(ds[i].y-ds[i-1].y)/d})}return out}
+function spectrum(ds){let v=ds.filter(p=>finite(p.x)&&finite(p.y));if(v.length<32)return null;let gaps=v.slice(1).map((p,i)=>p.x-v[i].x),dt=median(gaps),jitter=Math.max(...gaps.map(g=>Math.abs(g-dt)))/(dt||1);if(dt<=0||jitter>.1)return {error:'FFT needs near-uniform time samples (≤10% interval jitter).'};let n=1;while(n*2<=v.length&&n<4096)n*=2;if(n<32)return null;let start=v.length-n;let re=[],im=Array(n).fill(0),center=mean(v.slice(start).map(p=>p.y));for(let i=0;i<n;i++)re[i]=(v[start+i].y-center)*(0.5-0.5*Math.cos(2*Math.PI*i/(n-1)));
+ // in-place radix-2 FFT
+ let j=0;for(let i=1;i<n;i++){let bit=n>>1;for(;j&bit;bit>>=1)j^=bit;j^=bit;if(i<j){[re[i],re[j]]=[re[j],re[i]];[im[i],im[j]]=[im[j],im[i]]}}
+ for(let size=2;size<=n;size*=2){let angle=-2*Math.PI/size,wr=Math.cos(angle),wi=Math.sin(angle);for(let i=0;i<n;i+=size){let cr=1,ci=0;for(let j=0;j<size/2;j++){let k=i+j,l=k+size/2,tr=cr*re[l]-ci*im[l],ti=cr*im[l]+ci*re[l];re[l]=re[k]-tr;im[l]=im[k]-ti;re[k]+=tr;im[k]+=ti;[cr,ci]=[cr*wr-ci*wi,cr*wi+ci*wr]}}}
+ let bins=Array.from({length:n/2},(_,i)=>({x:i/(dt*n),y:4*Math.hypot(re[i],im[i])/n}));const peaks=bins.slice(1).sort((a,b)=>b.y-a.y).slice(0,3);return {bins,n,fs:1/dt,peak:peaks[0],peaks}}
+function integrate(ds){let out=[],sum=0;for(let i=0;i<ds.length;i++){let p=ds[i];if(i){let prev=ds[i-1];if(p.x>prev.x)sum+=(p.y+prev.y)*.5*(p.x-prev.x)}out.push({x:p.x,y:sum})}return out}
+function histogram(ds,bins=12){const a=ds.map(p=>p.y).filter(finite);if(!a.length)return [];let min=Math.min(...a),max=Math.max(...a);if(min===max)return [{x:min,y:a.length}];let w=(max-min)/bins,counts=Array(bins).fill(0);for(const v of a)counts[Math.min(bins-1,Math.floor((v-min)/w))]++;return counts.map((y,i)=>({x:min+(i+.5)*w,y}))}
+function descriptive(ds){let v=ds.map(p=>p.y).filter(finite);if(!v.length)return null;let m=mean(v),sd=Math.sqrt(v.reduce((s,x)=>s+(x-m)**2,0)/Math.max(1,v.length-1));return {n:v.length,mean:m,sd,min:Math.min(...v),max:Math.max(...v),integral:integrate(ds).at(-1)?.y||0}}
+window.SDLAnalysis={fit,fitBest,transform,rate,spectrum,fmt,mean,integrate,histogram,descriptive};})();

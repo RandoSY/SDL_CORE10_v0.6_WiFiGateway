@@ -1,0 +1,15 @@
+# Local build products and device backups (flash can contain saved credentials).
+artifacts/
+__pycache__/
+*.pyc
+logs/
+arduino/SDL_ATOM_Gateway_Node/wifi_config.local.h
+tmp/
+# Arduino IDE exports can also contain credentials embedded in firmware.
+arduino/SDL_ATOM_Gateway_Node/build/
+# Machine-specific endpoint and session resume pointer; use the examples/setup commands.
+accelerometer_settings.json
+restart.txt
+.env
+.env.*
+!.env.example
