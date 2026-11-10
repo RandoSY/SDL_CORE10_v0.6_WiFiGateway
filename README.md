@@ -63,6 +63,7 @@ Long-duration losslessness and calibration remain unverified. Later uncontrolled
 
 | Start with | Contents |
 |---|---|
+| [Building M5Stack products with Codex](docs/09_BUILDING_M5STACK_WITH_CODEX.md) | Candid working method, build loop, lessons learned and reusable starter instruction |
 | [Programmer's guide - PDF](output/pdf/ATOM_Matrix_1_0_Programmers_Guide.pdf) | 16 pages; design rationale, 42 file/line references, numbered code excerpts and commands |
 | [Runbook](RUNBOOK.md) | Startup, configuration, build, flash, test and recovery commands |
 | [Hardware and LED reference](docs/06_ATOM_MATRIX_1_0.md) | Board target, pins and state-based matrix display |
