@@ -2,6 +2,8 @@
 
 **Deliverable:** independently runnable, Python-standard-library Wi-Fi/TCP telemetry gateway plus the existing five-tab CORE 10 graphical-analysis dashboard. **No Docker, Node, pip installs, or cloud account are required for the demo.**
 
+**Product role:** this is the instrumentation and data-acquisition foundation within the broader SDL / RobotEDU education strategy. The product goal is a Vernier-like combination of instruments, experiments, graphing and analysis, extended into robotics and student-built devices. Independent execution describes this component's current architecture, not a separate product strategy.
+
 ## Windows: first successful experiment
 
 1. Unzip the whole archive to a writable directory, e.g., `C:\SDL\SDL_CORE10_v0.6_WiFiGateway\`. Do not run individual HTML files directly out of ZIP.

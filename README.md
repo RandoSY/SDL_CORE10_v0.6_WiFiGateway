@@ -1,31 +1,90 @@
-# SDL CORE 10 v0.6 - Independent Wi-Fi/TCP Gateway + Graphical Analysis
+# SDL / RobotEDU - Wi-Fi Instrumentation and 50 Hz ATOM Monitor
 
-**Start here: `docs/00_START_HERE.md`.** On Windows, double-click **`START_DEMO.bat`** after extracting the entire ZIP. Python 3.10+ standard library; no extra packages, Docker or cloud required for the demo.
+Part of the **SDL / RobotEDU education product strategy**: programmable instruments, laboratory experiments, robotics, and browser-based measurement and analysis. The broader goal is a **Vernier-like instrument-and-software experience**, extended to student-built devices and AI-assisted development.
 
-- Dashboard: `http://127.0.0.1:8788/`
-- WebSocket: `ws://127.0.0.1:8788/ws/telemetry`
-- Python health: `http://127.0.0.1:8788/api/status`
-- TCP node: port `8766`; simulation launches on `127.0.0.1`
-- Unit/integration tests: `py -3 -m unittest discover -s tests -v`
-- Real instrument (experimental): `START_WIFI_NODE.bat <DEVICE_IP> [PORT]`
-- Optional browser behavior tests (Node.js required only for these tests): `node --test tests/test_browser_delivery.cjs`
+This repository provides the Wi-Fi acquisition gateway and browser analysis foundation, including a verified **50 Hz accelerometer monitor for the original M5Stack ATOM Matrix 1.0 / MPU6886**.
 
-**Scope:** 10 CORE 10 simulations and 8 Vernier-inspired browser extensions from v0.5; Python TCP gateway with 5-second goodput, sample integrity, RTT and approximate lag. Default data are explicitly **synthetic**. The gateway is a **standalone sidecar**, not a modification to the historical SUPER SDL v0.7 MCP/SDL-ASCII service; it uses different ports and a different node protocol.
+![AI-directed physical computing: engineering workflow and M5Stack applications](docs/images/ai-directed-physical-computing.png)
 
-**Security:** local-only browser server; no TLS or authentication. Do not port-forward or connect to untrusted networks.
+*Broader product and development workflow. Hardware results below cover the original ATOM Matrix 1.0; other pictured applications describe the wider strategy.*
 
-Learn the architecture via `docs/01_ARCHITECTURE_AND_LESSON.md` and printable `docs/ARCHITECTURE.svg`. Status and limitations in `docs/04_TEST_REPORT.md`.
+## What it does
 
-**Reliability fixes (2026-11-08):** malformed node input is rejected or reconnects safely; silent nodes have a configurable response deadline (`--node-timeout 10`); repeated Windows log rotation works and reports failures; browser queue losses are visible and retained in saved runs/exports; device-specific diagnostics reset on reconnect. See [behavior, compatibility, and recovery details](docs/05_GATEWAY_RELIABILITY.md).
+- **50 Hz acquisition:** dedicated FreeRTOS sampler and bounded queue.
+- **Visible data quality:** CRC32, sequence gaps, errors, RTT, RSSI and browser delivery loss.
+- **Responsive browser:** capture every delivered reading, redraw charts at up to 10 Hz, export raw ms/mg as CSV or JSON.
+- **Education workflow:** synthetic CORE 10 experiments alongside physical instrumentation.
 
-**Original ATOM Matrix 1.0:** a separate MPU6886 bench node with state-based LED feedback is in `arduino/SDL_ATOM_Gateway_Node/`. See [hardware, matrix legend and bench limitations](docs/06_ATOM_MATRIX_1_0.md). It uses saved station settings when available and never indicates a successful transfer from an animation alone.
+**Data path:** ATOM TCP server → Python gateway → WebSocket → browser. The PC serves the dashboard. USB is optional during normal Wi-Fi operation.
 
-To run the physical COM30 USB/TCP/reconnect check from your normal Windows account, double-click **`RUN_ATOM_BENCH.bat`**. It reads the actual node IP and saves results under `artifacts/atom-bench-*`. An offline agent sandbox may deny LAN TCP even when ping succeeds; see the [bench record](docs/07_ATOM_BENCH_RESULTS.md#root-cause-of-the-pc-tcp-denial).
+## Quick start - Windows
 
-**Accelerometer monitor:** `START_ACCELEROMETER.bat` opens `http://127.0.0.1:8799/accelerometer.html`. Firmware 0.6.4 uses a dedicated FreeRTOS sampler and 128-reading queue; the physical 15.02-second test delivered 751 samples at 50.00 Hz without gaps, skips, drops or CRC/parse errors. See the [formal validation report](output/pdf/ATOM_Matrix_1_0_50Hz_Validation_Report.pdf), [runbook](RUNBOOK.md), and `node scripts/measure_accelerometer.cjs --history` for evidence and recall.
+Requires Python **3.10+** (tested with 3.14) and a modern browser. Normal runtime uses Python's standard library; no Docker, Node.js, pip packages or cloud account is required.
 
-**Programmer's guide:** [PDF guide and source reference](output/pdf/ATOM_Matrix_1_0_Programmers_Guide.pdf) and [editable design explanation](docs/08_ATOM_RESPONSIVENESS_DESIGN.md). Explains the sampler/queue, Python bridge, browser capture versus redraw, exact source locations, overflow policies and measured limits. The user confirmed substantially improved browser responsiveness at a solid displayed 50 Hz. Later cumulative queue drops qualify the short passing test; long-duration losslessness remains unverified.
+```powershell
+git clone https://github.com/RandoSY/SDL_CORE10_v0.6_WiFiGateway.git
+cd SDL_CORE10_v0.6_WiFiGateway
+```
 
-**Fresh GitHub checkout:** set your physical ATOM endpoint once with `py -3 start_accelerometer.py --node-host <ATOM_IP> --save-node --open-browser` (replace `<ATOM_IP>`). This creates the ignored local `accelerometer_settings.json`; subsequent starts can use `START_ACCELEROMETER.bat`. `accelerometer_settings.example.json` shows the format with a documentation-only example IP. USB is optional. For a device without saved Wi-Fi credentials, the firmware folder supplies `wifi_config.example.h`; follow its comments to create an ignored local header.
+### Physical ATOM monitor
 
-The repository includes source, tests, documentation, reports, images, the original release ZIP, and the experiment summary ledger. Credentials, local endpoint settings, firmware/build exports, raw capture logs, temporary renderings and the local agent-session pointer remain local. Historical evidence paths and PDF file links refer to the original workstation; use the printed relative paths and fresh-checkout setup on another computer. No firmware binaries containing local credentials are published. `.gitattributes` preserves exact bytes for recorded source fingerprints.
+Use an ATOM already running the included gateway firmware, powered and connected to the same LAN. Firmware build/flash instructions are in the [runbook](RUNBOOK.md).
+
+```powershell
+$atomAddress = "192.168.0.213"  # Replace with your ATOM's current IP address.
+py -3 start_accelerometer.py --node-host $atomAddress --save-node --open-browser
+```
+
+Later, double-click **START_ACCELEROMETER.bat**. Monitor: [localhost:8799/accelerometer.html](http://127.0.0.1:8799/accelerometer.html).
+
+### Demo without hardware
+
+```powershell
+.\START_DEMO.bat
+```
+
+Dashboard: [localhost:8788](http://127.0.0.1:8788/). Follow [Start Here](docs/00_START_HERE.md) to record an experiment. Demo measurements are explicitly synthetic.
+
+| Service | Endpoint |
+|---|---|
+| ATOM instrument TCP | Device IP, port **8766** |
+| Physical monitor / status | PC port **8799**; `/accelerometer.html`, `/api/status` |
+| Synthetic demo dashboard | PC port **8788** |
+
+## Verified results
+
+- Firmware **0.6.4**: **751 samples / 15.02 seconds / 50.00 Hz**, with zero measured gaps, skips, queue drops, CRC/parse errors or test-client delivery drops in that window.
+- User-observed browser responsiveness improved substantially, with a solid displayed 50 Hz.
+- **35 Python tests and 9 JavaScript tests passed**, most recently November 10, 2026.
+
+Long-duration losslessness and calibration remain unverified. Later uncontrolled operation recorded queue overflows; see the [bench record](docs/07_ATOM_BENCH_RESULTS.md) for scope and limits.
+
+## Documentation and source map
+
+| Start with | Contents |
+|---|---|
+| [Programmer's guide - PDF](output/pdf/ATOM_Matrix_1_0_Programmers_Guide.pdf) | 16 pages; design rationale, 42 file/line references, numbered code excerpts and commands |
+| [Runbook](RUNBOOK.md) | Startup, configuration, build, flash, test and recovery commands |
+| [Hardware and LED reference](docs/06_ATOM_MATRIX_1_0.md) | Board target, pins and state-based matrix display |
+| [Detailed responsiveness design](docs/08_ATOM_RESPONSIVENESS_DESIGN.md) | Sampler, queues, Python bridge, browser rendering and overflow policies |
+| [Validation report - PDF](output/pdf/ATOM_Matrix_1_0_50Hz_Validation_Report.pdf) | Original timed physical measurement and fingerprints |
+| [Experiment ledger](experiments/atom-performance.jsonl) | Machine-readable measurements and operator observations |
+
+Firmware: `arduino/SDL_ATOM_Gateway_Node/` · Gateway: `gateway/` · Browser: `web/` · Tests: `tests/` · Measurement/report tools: `scripts/`.
+
+## Run the tests
+
+```powershell
+py -3 -B -m unittest discover -s tests -q
+node --test tests/test_accelerometer.cjs tests/test_browser_delivery.cjs
+```
+
+Node.js is optional for JS tests/measurement. USB bench helpers need pyserial; other tool requirements are in the runbook.
+
+## Configuration and included files
+
+Credentials, local settings, configured firmware binaries, raw logs and temporary files stay local. Configuration examples: `accelerometer_settings.example.json` and `arduino/SDL_ATOM_Gateway_Node/wifi_config.example.h`. The monitor command saves your local endpoint automatically.
+
+Source, tests, images, reports, the historical release ZIP and experiment summaries are included. Follow current Markdown; historical PDFs/evidence retain original workstation paths. Source bytes are preserved for recorded fingerprints.
+
+This component supports the larger SDL / RobotEDU platform. Its TCP/WebSocket implementation currently runs separately from the historical SUPER SDL v0.7 MCP service. The browser server binds to localhost.

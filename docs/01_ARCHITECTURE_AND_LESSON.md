@@ -4,6 +4,8 @@
 
 **The instrument measures. Python supervises. The browser explains.**
 
+This component belongs to the SDL / RobotEDU education product strategy: a Vernier-like instrument-and-software experience spanning experiments, acquisition, graphing, analysis and robotics. Its independently runnable gateway is an implementation boundary within that platform. It does not imply all broader product goals are implemented or validated here.
+
 For the physical ATOM Matrix 1.0 monitor on PC port 8799, see [the detailed 50 Hz design and programmer's reference](08_ATOM_RESPONSIVENESS_DESIGN.md). It documents the dedicated FreeRTOS sampler, bounded queues, separate browser ingestion/rendering, source locations and evidence. The general lesson below describes the original demo on port 8788.
 
 1. **Instrument (or synthetic device):** produces measurements, assigns a monotonically increasing sequence number, remembers its boot identity, reports optional RSSI, and sends timestamped samples. For a real ESP32 this runs as Wi-Fi **station** on your existing router; it is not an access point.
